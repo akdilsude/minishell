@@ -6,7 +6,7 @@
 /*   By: sakdil < sakdil@student.42istanbul.com.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 17:40:47 by sakdil            #+#    #+#             */
-/*   Updated: 2025/07/11 10:43:55 by sakdil           ###   ########.fr       */
+/*   Updated: 2025/07/12 01:12:43 by sakdil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,47 +74,56 @@ typedef struct s_token
     struct s_token *next;
 } t_token;
 
-
-void		execute_command(char *input);
-int			is_only_spaces(char *str);
-const char *pathname(char *command);
-int 		builtin(int argc, char **argv, char **env, t_list *history);
-void		add_to_history(t_list **history, char *input);
-void		print_history(t_list *history);
-int ft_parser(t_token *input);
-int builtin_echo(int argc, char **argv, char **env);
 int	builtin_cd(int argc, char **argv);
-int builtin_export(int argc, char **argv, char ***env);
-int builtin_env(char **env);
+int	builtin_echo(int argc, char **argv);
+int	control_env(int argc);
+int	builtin_env(char **env);
 int	builtin_exit(int argc, char **argv);
-int control_env(int argc);
-int builtin_export_process(int argc, char **argv, int status, int i, char ***env);
-int builtin_pwd(void);
-int builtin_unset(int argc, char **argv, char ***env);
-// int is_valid_identifier(const char *name);
-// int find_in_environ(const char *name, char **env);
-// void print_tokens(t_token *head);
 int	is_valid_identifier(const char *name);
-int	is_valid_identifier_len(const char *name, size_t len);
-
-t_ast_tree *ft_build_ast(t_token *tokens);
-t_token	*tokenize_input(char *input);
-t_token *create_token(char *value);
-t_token *create_redir_token(char *value);
-t_token *create_pipe_token(char *value);
-t_token *create_word_token(char *value);
-void	free_tokens(t_token *head);
-char	*expand_variable(char *str);
-char *find_path(char *command);
-void executor_structure(t_ast_tree *node, char **envp, int in_pipeline, int *exit_status);
-int	args_count(char **args);
-char	*ft_charjoin_free(char *res, char *val, int flag);
-
-//bunlar kontrol amaçlı eklenenler
-// void print_tokens(t_token *head);
-void print_ast(t_ast_tree *node, int depth);
-//*************************/
-void free_env(char **env);
-char **dup_env(char **env);
+int	builtin_export(int argc, char **argv, char ***envp);
 int	find_in_environ(const char *name, char **env);
+int	extend_env(char ***envp, char *new_entry);
+int	set_env_var(char *arg, char ***envp);
+void	print_sorted_env(char **env);
+void	print_invalid_identifier(char *arg);
+int	builtin_pwd(void);
+int	builtin_unset(int argc, char **argv, char ***env);
+int	builtin(int argc, char **argv, char **env, t_list *history);
+int	is_only_spaces(char *str);
+void executor_structure(t_ast_tree *node, char **envp, int in_pipeline,int *exit_status);
+
+//history//////////////////
+void	add_to_history(t_list **history, char *input);
+void print_history(t_list *history);
+////////////////////////////
+
+//parser///////////////////////
+t_ast_tree *ft_build_ast(t_token *tokens);
+int ft_last(t_token *input);
+int	is_invalid_redir_target(t_token *token);
+void print_ast(t_ast_tree *node, int depth);
+int ft_parser(t_token *input);
+////////////////////////////////
+
+//path_find//////////////////////////
+void free_string_array(char **array);
+char *find_path(char *command);
+const char *pathname(char *command);
+//////////////////////////////////////
+
+char	*ft_charjoin_free(char *res, char *val, int flag);
+char	*ft_charjoin(char *res, char c);
+void	free_tokens(t_token *head); //şu anki mainde yok
+char	*expand_variable(char *str);
+t_token	*create_word_token(char *value);
+t_token	*create_pipe_token(char *value);
+t_token	*create_redir_token(char *value);
+t_token	*create_token(char *value);
+int	is_word_char(char c);
+t_token *tokenize_input(char *input);
+char	*collect_argument(char *input, int *i);
+void	add_token_to_list(t_token **head, t_token *new);
+int	handle_redir_operator(char *s, t_token **head);
+int	handle_redir_file(char *s, int *i, t_token **head);
+
 #endif
