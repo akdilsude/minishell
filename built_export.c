@@ -6,7 +6,7 @@
 /*   By: sakdil < sakdil@student.42istanbul.com.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/08 12:27:34 by sakdil            #+#    #+#             */
-/*   Updated: 2025/07/06 16:15:12 by sakdil           ###   ########.fr       */
+/*   Updated: 2025/07/11 10:41:24 by sakdil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int	is_valid_identifier(const char *name)
 {
-	int i;
+	int	i;
 
 	if (!name || !name[0])
 		return (0);
@@ -32,7 +32,7 @@ int	is_valid_identifier(const char *name)
 
 int	is_valid_identifier_len(const char *name, size_t len)
 {
-	size_t i;
+	size_t	i;
 
 	if (len == 0 || (name[0] >= '0' && name[0] <= '9'))
 		return (0);
@@ -48,8 +48,8 @@ int	is_valid_identifier_len(const char *name, size_t len)
 
 int	find_in_environ(const char *name, char **env)
 {
-	int i;
-	int len;
+	int	i;
+	int	len;
 
 	len = ft_strlen(name);
 	i = 0;
@@ -88,52 +88,80 @@ static int	extend_env(char ***envp, char *new_entry)
 	return (0);
 }
 
+static int	set_env_var_update(char *name, char *value, char **envp, int idx)
+{
+	char	*tmp;
+	char	*new_var;
+
+	free(envp[idx]);
+	tmp = ft_strjoin(name, "=");
+	if (!tmp)
+		return (1);
+	new_var = ft_strjoin(tmp, value);
+	free(tmp);
+	if (!new_var)
+		return (1);
+	envp[idx] = new_var;
+	return (0);
+}
+
+static int	set_env_var_add(char *name, char *value, char ***envp)
+{
+	char	*tmp;
+	char	*new_var;
+
+	tmp = ft_strjoin(name, "=");
+	if (!tmp)
+		return (1);
+	new_var = ft_strjoin(tmp, value);
+	free(tmp);
+	if (!new_var)
+		return (1);
+	if (extend_env(envp, new_var))
+		return (free(new_var), 1);
+	return (0);
+}
+
 static int	set_env_var(char *arg, char ***envp)
 {
 	char	*eq;
 	char	*name;
 	char	*value;
-	char	*tmp;
 	int		idx;
+	int		ret;
 
 	eq = ft_strchr(arg, '=');
+	if (!eq)
+		return (1);
 	name = ft_substr(arg, 0, eq - arg);
 	value = ft_strdup(eq + 1);
 	if (!name || !value)
-		return (free(name), free(value), 1);
+	{
+		free(name);
+		free(value);
+		return (1);
+	}
 	idx = find_in_environ(name, *envp);
 	if (idx >= 0)
-	{
-		free((*envp)[idx]);
-		tmp = ft_strjoin(name, "=");
-		(*envp)[idx] = ft_strjoin(tmp, value);
-		free(tmp);
-	}
+		ret = set_env_var_update(name, value, *envp, idx);
 	else
-	{
-		tmp = ft_strjoin(name, "=");
-		tmp = ft_strjoin(tmp, value);
-		if (extend_env(envp, tmp))
-			return (free(name), free(value), 1);
-	}
+		ret = set_env_var_add(name, value, envp);
 	free(name);
 	free(value);
-	return (0);
+	return (ret);
 }
 
-static void	print_sorted_env(char **env)
+static char	**copy_env(char **env)
 {
-	int		n;
+	int		n = 0;
+	int		i;
 	char	**copy;
-	int		i, j;
-	char	*k1, *k2, *tmp;
 
-	n = 0;
 	while (env[n])
 		n++;
 	copy = malloc(sizeof(char *) * (n + 1));
 	if (!copy)
-		return;
+		return (NULL);
 	i = 0;
 	while (i < n)
 	{
@@ -141,28 +169,69 @@ static void	print_sorted_env(char **env)
 		i++;
 	}
 	copy[n] = NULL;
+	return (copy);
+}
+
+static int	compare_keys(char *s1, char *s2)
+{
+	char	*k1;
+	char	*k2;
+	int		res;
+
+	k1 = ft_substr(s1, 0, ft_strchr(s1, '=') - s1);
+	k2 = ft_substr(s2, 0, ft_strchr(s2, '=') - s2);
+	if (!k1 || !k2)
+	{
+		free(k1);
+		free(k2);
+		return (0);
+	}
+	res = ft_strcmp(k1, k2);
+	free(k1);
+	free(k2);
+	return (res);
+}
+
+static void	sort_env(char **copy)
+{
+	int		n;
+	int		i;
+	int		j;
+	char	*tmp;
+
+	n = 0;
+	while (copy[n])
+		n++;
 	i = 0;
 	while (i < n - 1)
 	{
 		j = 0;
 		while (j < n - i - 1)
 		{
-			k1 = ft_substr(copy[j], 0, ft_strchr(copy[j], '=') - copy[j]);
-			k2 = ft_substr(copy[j + 1], 0, ft_strchr(copy[j + 1], '=') - copy[j + 1]);
-			if (ft_strcmp(k1, k2) > 0)
+			if (compare_keys(copy[j], copy[j + 1]) > 0)
 			{
 				tmp = copy[j];
 				copy[j] = copy[j + 1];
 				copy[j + 1] = tmp;
 			}
-			free(k1);
-			free(k2);
 			j++;
 		}
 		i++;
 	}
+}
+
+void	print_sorted_env(char **env)
+{
+	char	**copy;
+	int		i;
+	char	*tmp;
+
+	copy = copy_env(env);
+	if (!copy)
+		return ;
+	sort_env(copy);
 	i = 0;
-	while (i < n)
+	while (copy[i])
 	{
 		tmp = ft_strchr(copy[i], '=');
 		printf("declare -x %.*s=\"%s\"\n",
@@ -172,58 +241,91 @@ static void	print_sorted_env(char **env)
 	free(copy);
 }
 
-int builtin_export(int argc, char **argv, char ***envp)
+static void	print_invalid_identifier(char *arg)
 {
-    int i;
-    int status;
-    char *msg;
-    char *temp;
+	char	*msg;
+	char	*temp;
 
-    i = 1;
-    status = 0;
-    if (argc == 1)
-    {
-        print_sorted_env(*envp);
-        return (0);
-    }
-    while (i < argc)
-    {
-        if (ft_strchr(argv[i], '='))
-        {
-            if (!is_valid_identifier_len(argv[i], ft_strchr(argv[i], '=') - argv[i]))
-            {
-                temp = ft_substr(argv[i], 0, ft_strchr(argv[i], '=') - argv[i]);
-                msg = ft_strjoin("export: '", temp);
-                free(temp);
-                temp = ft_strjoin(msg, "': not a valid identifier\n");
-                free(msg);
-                ft_putstr_fd(temp, 2);
-                free(temp);
-                status = 1;
-            }
-            else if (set_env_var(argv[i], envp))
-                status = 1;
-        }
-        else
-        {
-            if (!is_valid_identifier(argv[i]))
-            {
-                msg = ft_strjoin("export: '", argv[i]);
-                temp = ft_strjoin(msg, "': not a valid identifier\n");
-                free(msg);
-                ft_putstr_fd(temp, 2);
-                free(temp);
-                status = 1;
-            }
-            else if (find_in_environ(argv[i], *envp) < 0)
-            {
-                char *entry = ft_strjoin(argv[i], "=");
-                if (!entry || extend_env(envp, entry))
-                    status = 1;
-                free(entry);
-            }
-        }
-        i++;
-    }
-    return (status);
+	msg = ft_strjoin("export: '", arg);
+	if (!msg)
+		return ;
+	temp = ft_strjoin(msg, "': not a valid identifier\n");
+	free(msg);
+	if (!temp)
+		return ;
+	ft_putstr_fd(temp, 2);
+	free(temp);
+}
+
+static int	process_export_assignment(char *arg, char ***envp)
+{
+	char	*name;
+	int		len;
+	int		status;
+
+	status = 0;
+	len = ft_strchr(arg, '=') - arg;
+	if (!is_valid_identifier_len(arg, len))
+	{
+		name = ft_substr(arg, 0, len);
+		if (name)
+		{
+			print_invalid_identifier(name);
+			free(name);
+		}
+		status = 1;
+	}
+	else if (set_env_var(arg, envp))
+		status = 1;
+	return (status);
+}
+
+static int	process_export_name(char *arg, char ***envp)
+{
+	int		status;
+	char	*entry;
+
+	status = 0;
+	if (!is_valid_identifier(arg))
+	{
+		print_invalid_identifier(arg);
+		status = 1;
+	}
+	else if (find_in_environ(arg, *envp) < 0)
+	{
+		entry = ft_strjoin(arg, "=");
+		if (!entry || extend_env(envp, entry))
+			status = 1;
+		free(entry);
+	}
+	return (status);
+}
+
+int	builtin_export(int argc, char **argv, char ***envp)
+{
+	int	i;
+	int	status;
+
+	status = 0;
+	i = 1;
+	if (argc == 1)
+	{
+		print_sorted_env(*envp);
+		return (0);
+	}
+	while (i < argc)
+	{
+		if (ft_strchr(argv[i], '='))
+		{
+			if (process_export_assignment(argv[i], envp))
+				status = 1;
+		}
+		else
+		{
+			if (process_export_name(argv[i], envp))
+				status = 1;
+		}
+		i++;
+	}
+	return (status);
 }

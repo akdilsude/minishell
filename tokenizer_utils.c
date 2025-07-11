@@ -6,13 +6,13 @@
 /*   By: sakdil < sakdil@student.42istanbul.com.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/31 17:51:21 by segunes           #+#    #+#             */
-/*   Updated: 2025/07/06 16:10:18 by sakdil           ###   ########.fr       */
+/*   Updated: 2025/07/11 10:43:11 by sakdil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char	*ft_strjoin_free(char *res, char *val, int flag)
+char	*ft_charjoin_free(char *res, char *val, int flag)
 {
 	char	*tmp;
 
@@ -24,7 +24,7 @@ char	*ft_strjoin_free(char *res, char *val, int flag)
 	return (tmp);
 }
 
-char	*ft_strjoin_char(char *res, char c)
+char	*ft_charjoin(char *res, char c)
 {
 	char	*tmp;
 	int		len;
@@ -43,29 +43,12 @@ char	*ft_strjoin_char(char *res, char c)
 	return (tmp);
 }
 
-static char *handle_var(char *str, int *i, char *res)
+static char	*handle_var_utils(char *res, char *str, int *i, int j)
 {
-	char *val;
-	char *var;
-	int   j = 1;
+	char	*var;
+	char	*val;
+	char	*fallback;
 
-	if (str[*i + 1] == '?')
-	{
-		val = ft_itoa(g_last_status);
-		if (!val)
-			return (NULL);
-		res = ft_strjoin_free(res, val, 3);
-		*i += 2;
-		return (res);
-	}
-	while (str[*i + j] && (ft_isalnum(str[*i + j]) || str[*i + j] == '_'))
-		j++;
-	if (j == 1)
-	{
-		res = ft_strjoin_char(res, '$');
-		(*i)++;
-		return (res);
-	}
 	var = ft_substr(str, *i + 1, j - 1);
 	if (!var)
 		return (NULL);
@@ -73,43 +56,79 @@ static char *handle_var(char *str, int *i, char *res)
 	free(var);
 	if (!val)
 	{
-		char *fallback = ft_substr(str, *i, j);
+		fallback = ft_substr(str, *i, j);
 		if (!fallback)
 			return (NULL);
-		res = ft_strjoin_free(res, fallback, 3);
+		res = ft_charjoin_free(res, fallback, 3);
 	}
 	else
-		res = ft_strjoin_free(res, ft_strdup(val), 3);
+		res = ft_charjoin_free(res, ft_strdup(val), 3);
 	*i += j;
 	return (res);
 }
 
-
-char *expand_variable(char *str)
+static char	*handle_var(char *str, int *i, char *res)
 {
-	char *res = ft_strdup("");
-	int   i   = 0;
+	char	*val;
+	int		j;
 
-	if (!res)
-		return (NULL);
+	j = 1;
+	if (str[*i + 1] == '?')
+	{
+		val = ft_itoa(g_last_status);
+		if (!val)
+			return (NULL);
+		res = ft_charjoin_free(res, val, 3);
+		*i += 2;
+		return (res);
+	}
+	while (str[*i + j] && (ft_isalnum(str[*i + j]) || str[*i + j] == '_'))
+		j++;
+	if (j == 1)
+	{
+		res = ft_charjoin(res, '$');
+		(*i)++;
+		return (res);
+	}
+	return (handle_var_utils(res, str, i, j));
+}
+
+static char	*expand_variable_loop(char *str, char *res)
+{
+	int		i;
+	char	*tmp;
+
+	i = 0;
 	while (str[i])
 	{
 		if (str[i] == '$')
 		{
-			char *tmp = handle_var(str, &i, res);
+			tmp = handle_var(str, &i, res);
 			if (!tmp)
 				return (NULL);
 			res = tmp;
 		}
 		else
 		{
-			char *tmp = ft_strjoin_char(res, str[i++]);
+			tmp = ft_charjoin(res, str[i++]);
 			if (!tmp)
 				return (NULL);
 			res = tmp;
 		}
 	}
 	return (res);
+}
+
+char	*expand_variable(char *str)
+{
+	char	*res;
+	char	*tmp;
+
+	res = ft_strdup("");
+	if (!res)
+		return (NULL);
+	tmp = expand_variable_loop(str, res);
+	return (tmp);
 }
 
 t_token	*create_word_token(char *value)

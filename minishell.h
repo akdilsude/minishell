@@ -6,7 +6,7 @@
 /*   By: sakdil < sakdil@student.42istanbul.com.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 17:40:47 by sakdil            #+#    #+#             */
-/*   Updated: 2025/07/06 15:53:24 by sakdil           ###   ########.fr       */
+/*   Updated: 2025/07/11 10:43:55 by sakdil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,10 +108,10 @@ char	*expand_variable(char *str);
 char *find_path(char *command);
 void executor_structure(t_ast_tree *node, char **envp, int in_pipeline, int *exit_status);
 int	args_count(char **args);
-char	*ft_strjoin_free(char *res, char *val, int flag);
+char	*ft_charjoin_free(char *res, char *val, int flag);
 
 //bunlar kontrol amaçlı eklenenler
-void print_tokens(t_token *head);
+// void print_tokens(t_token *head);
 void print_ast(t_ast_tree *node, int depth);
 //*************************/
 void free_env(char **env);

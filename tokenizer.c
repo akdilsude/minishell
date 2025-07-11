@@ -6,23 +6,11 @@
 /*   By: sakdil < sakdil@student.42istanbul.com.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 14:32:24 by segunes           #+#    #+#             */
-/*   Updated: 2025/07/06 16:12:20 by sakdil           ###   ########.fr       */
+/*   Updated: 2025/07/11 10:45:34 by sakdil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-
-void print_tokens(t_token *head)
-{
-	t_token *tmp = head;
-
-	while (tmp)
-	{
-		printf("TOKEN TYPE: %u\tVALUE: %s\n", tmp->type, tmp->value);
-		tmp = tmp->next;
-	}
-}// type yazdırmak için kontrol
 
 void	add_token_to_list(t_token **head, t_token *new)
 {
@@ -48,72 +36,99 @@ static int	is_word_char(char c)
 	return (1);
 }
 
-static char *collect_argument(char *input, int *i)
+static char	*collect_single_quote(char *input, int *i, char *arg)
 {
-	char *arg = ft_strdup("");
+	int		start;
+	char	*piece;
+
+	start = ++(*i);
+	while (input[*i] && input[*i] != '\'')
+		(*i)++;
+	if (!input[*i])
+		return (printf("syntax error: unclosed quote\n"), free(arg), NULL);
+	piece = ft_substr(input, start, (*i) - start);
+	if (!piece)
+		return (free(arg), NULL);
+	arg = ft_charjoin_free(arg, piece, 3);
+	(*i)++;
+	return (arg);
+}
+
+static char	*collect_double_quote(char *input, int *i, char *arg)
+{
+	int		start;
+	char	*raw;
+	char	*exp;
+
+	start = ++(*i);
+	while (input[*i] && input[*i] != '"')
+		(*i)++;
+	if (!input[*i])
+		return (printf("syntax error: unclosed quote\n"), free(arg), NULL);
+	raw = ft_substr(input, start, (*i) - start);
+	if (!raw)
+		return (free(arg), NULL);
+	exp = expand_variable(raw);
+	free(raw);
+	if (!exp)
+		return (free(arg), NULL);
+	arg = ft_charjoin_free(arg, exp, 3);
+	(*i)++;
+	return (arg);
+}
+
+static char	*collect_argument_word(char *input, int *i, char *arg)
+{
+	int		start;
+	char	*raw;
+	char	*exp;
+
+	start = *i;
+	while (input[*i] && is_word_char(input[*i]))
+		(*i)++;
+	raw = ft_substr(input, start, (*i) - start);
+	if (!raw)
+		return (free(arg), NULL);
+	exp = expand_variable(raw);
+	free(raw);
+	if (!exp)
+		return (free(arg), NULL);
+	arg = ft_charjoin_free(arg, exp, 3);
+	return (arg);
+}
+static char	*collect_argument_quote(char *input, int *i, char *arg)
+{
+	if (input[*i] == '\'')
+		return (collect_single_quote(input, i, arg));
+	else if (input[*i] == '"')
+		return (collect_double_quote(input, i, arg));
+	return (arg);
+}
+char	*collect_argument(char *input, int *i)
+{
+	char	*arg;
+
+	arg = ft_strdup("");
 	if (!arg)
 		return (NULL);
-
-	while (input[*i] &&
-	       !(input[*i] == ' ' || input[*i] == '\t' ||
-	         input[*i] == '|' || input[*i] == '<' || input[*i] == '>'))
+	while (input[*i] && !(input[*i] == ' ' || input[*i] == '\t'
+			|| input[*i] == '|' || input[*i] == '<' || input[*i] == '>'))
 	{
-		if (input[*i] == '\'')
+		if (input[*i] == '\'' || input[*i] == '"')
 		{
-			int start = ++(*i);
-			while (input[*i] && input[*i] != '\'')
-				(*i)++;
-			if (!input[*i])
-			{
-				printf("syntax error: unclosed quote\n");
-				free(arg);
+			arg = collect_argument_quote(input, i, arg);
+			if (!arg)
 				return (NULL);
-			}
-			char *piece = ft_substr(input, start, (*i) - start);
-			if (!piece)
-				return (free(arg), NULL);
-			arg = ft_strjoin_free(arg, piece, 3);
-			(*i)++;
-		}
-		else if (input[*i] == '"')
-		{
-			int start = ++(*i);
-			while (input[*i] && input[*i] != '"')
-				(*i)++;
-			if (!input[*i])
-			{
-				printf("syntax error: unclosed quote\n");
-				free(arg);
-				return (NULL);
-			}
-			char *raw = ft_substr(input, start, (*i) - start);
-			if (!raw)
-				return (free(arg), NULL);
-			char *exp = expand_variable(raw);
-			if (!exp)
-				return (free(raw), free(arg), NULL);
-			arg = ft_strjoin_free(arg, exp, 3);
-			free(raw);
-			(*i)++;
 		}
 		else
 		{
-			int start = *i;
-			while (input[*i] && is_word_char(input[*i]))
-				(*i)++;
-			char *raw = ft_substr(input, start, (*i) - start);
-			if (!raw)
-				return (free(arg), NULL);
-			char *exp = expand_variable(raw);
-			if (!exp)
-				return (free(raw), free(arg), NULL);
-			arg = ft_strjoin_free(arg, exp, 3);
-			free(raw);
+			arg = collect_argument_word(input, i, arg);
+			if (!arg)
+				return (NULL);
 		}
 	}
-	return arg;
+	return (arg);
 }
-
 
 static int	handle_redir_operator(char *s, t_token **head)
 {
@@ -226,9 +241,11 @@ static void	handle_special_char(char *input, int *i, t_token **head)
 
 t_token *tokenize_input(char *input)
 {
-	int      i = 0;
-	t_token *head = NULL;
+	int		i;
+	t_token	*head;
 
+	i = 0;
+	head = NULL;
 	while (input[i])
 	{
 		if (input[i] == ' ' || input[i] == '\t')
