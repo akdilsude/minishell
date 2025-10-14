@@ -6,13 +6,13 @@
 /*   By: segunes <segunes@student.42istanbul.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/22 15:29:22 by segunes           #+#    #+#             */
-/*   Updated: 2025/08/18 18:32:54 by segunes          ###   ########.fr       */
+/*   Updated: 2025/08/25 11:57:01 by segunes          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-int	is_only_spaces(char *str)
+int is_only_spaces(char *str)
 {
 	while (*str)
 	{
@@ -23,9 +23,9 @@ int	is_only_spaces(char *str)
 	return (1);
 }
 
-int	args_count(char **args)
+int args_count(char **args)
 {
-	int	i;
+	int i;
 
 	i = 0;
 	while (args[i])
@@ -33,9 +33,9 @@ int	args_count(char **args)
 	return (i);
 }
 
-int	ft_exit_code(int temp)
+int ft_exit_code(int temp)
 {
-	static int	exit_code;
+	static int exit_code;
 
 	if (temp == -1)
 	{
@@ -45,7 +45,7 @@ int	ft_exit_code(int temp)
 	return (exit_code);
 }
 
-static void	free_iter_state(t_shell *shell)
+static void free_iter_state(t_shell *shell)
 {
 	if (shell->ast)
 	{
@@ -64,14 +64,14 @@ static void	free_iter_state(t_shell *shell)
 	}
 }
 
-void	cleanup(t_shell *shell, int mode)
+void cleanup(t_shell *shell, int mode)
 {
 	if (!shell)
-		return ;
+		return;
 	if (mode == 1)
 	{
 		free_iter_state(shell);
-		return ;
+		return;
 	}
 	free_iter_state(shell);
 	if (shell->envp)

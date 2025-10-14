@@ -6,7 +6,7 @@
 /*   By: segunes <segunes@student.42istanbul.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/17 14:55:04 by segunes           #+#    #+#             */
-/*   Updated: 2025/08/18 18:21:37 by segunes          ###   ########.fr       */
+/*   Updated: 2025/08/20 11:56:55 by segunes          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,10 @@ void	executor_structure(t_ast_tree *node, int in_pipeline, t_shell *shell)
 		ft_exit_code(1);
 		return ;
 	}
-	exec_handle_redirs(node, std);
+	if (node->args && !node->args[0] && (node->redir_list->type == REDIR_IN
+			|| node->redir_list->type == REDIR_OUT
+			|| node->redir_list->type == APPEND))
+		exec_handle_redirs(node, std);
 	if (node->type == NODE_COMMAND)
 		exec_command(node, in_pipeline, std, shell);
 	else if (node->type == NODE_PIPE)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   built_exit.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sakdil < sakdil@student.42istanbul.com.    +#+  +:+       +#+        */
+/*   By: segunes <segunes@student.42istanbul.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/18 20:06:34 by sakdil            #+#    #+#             */
-/*   Updated: 2025/08/19 22:27:44 by sakdil           ###   ########.fr       */
+/*   Updated: 2025/08/20 11:57:12 by segunes          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ int	is_digit(int c)
 static int	is_numeric(const char *str)
 {
 	int	i;
-	int digits;
+	int	digits;
 
 	i = 0;
 	digits = 0;
@@ -41,7 +41,7 @@ static int	is_numeric(const char *str)
 static int	is_too_large(char *str)
 {
 	int	len;
-	int neg;
+	int	neg;
 
 	neg = 0;
 	if (!str || !*str)

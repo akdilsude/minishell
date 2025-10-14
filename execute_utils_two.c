@@ -6,7 +6,7 @@
 /*   By: segunes <segunes@student.42istanbul.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 18:13:41 by segunes           #+#    #+#             */
-/*   Updated: 2025/08/18 18:35:16 by segunes          ###   ########.fr       */
+/*   Updated: 2025/08/20 11:46:37 by segunes          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	exec_handle_redirs(t_ast_tree *node, t_std std)
 	t_redir	*r;
 
 	r = node->redir_list;
-	if (r && (r->type == REDIR_IN || r->type == REDIR_OUT))
+	if (r && (r->type == REDIR_IN || r->type == REDIR_OUT || r->type == APPEND))
 	{
 		if (handle_redirections(node) != 0)
 		{
