@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   heredoc.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: segunes <segunes@student.42istanbul.com    +#+  +:+       +#+        */
+/*   By: sakdil <sakdil@student.42istanbul.com.t    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/09 22:08:51 by sakdil            #+#    #+#             */
-/*   Updated: 2025/08/18 14:53:36 by segunes          ###   ########.fr       */
+/*   Updated: 2026/06/18 16:52:22 by sakdil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,7 @@ int	handle_heredoc(const char *delim, int quoted, t_shell *shell)
 	pid_t	pid;
 	char	*target;
 
+	target = NULL;
 	if (pipe(pipefd) == -1)
 		return (perror("pipe"), -1);
 	pid = fork();

@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: segunes <segunes@student.42istanbul.com    +#+  +:+       +#+        */
+/*   By: sakdil <sakdil@student.42istanbul.com.t    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/18 17:40:47 by sakdil            #+#    #+#             */
-/*   Updated: 2025/08/18 18:29:08 by segunes          ###   ########.fr       */
+/*   Updated: 2026/06/18 16:51:24 by sakdil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef MINISHELL_H
 # define MINISHELL_H
+
 # include <stdio.h>
 # include <unistd.h>
 # include <readline/readline.h>
@@ -20,7 +21,7 @@
 # include <sys/wait.h>
 # include <stdlib.h>
 # include <fcntl.h>
-# include "libft/libft.h"
+# include "libft.h"
 # include <signal.h>
 # include <errno.h>
 # include <sys/stat.h>

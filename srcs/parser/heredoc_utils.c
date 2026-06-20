@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   heredoc_utils.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: segunes <segunes@student.42istanbul.com    +#+  +:+       +#+        */
+/*   By: sakdil <sakdil@student.42istanbul.com.t    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 16:59:10 by segunes           #+#    #+#             */
-/*   Updated: 2025/08/18 14:52:28 by segunes          ###   ########.fr       */
+/*   Updated: 2026/06/18 16:48:22 by sakdil           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ char	**heredoc_signal(int flag, t_shell *shell, const char *target)
 }
 
 int	heredocs_prepare(t_ast_tree *node, t_shell *shell)
-{	
+{
 	t_redir	*r;
 	int		fd;
 
